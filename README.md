@@ -2,7 +2,7 @@
 
 ## 概述
 
-**nqboard-web** 是一个为 SPICYIOT 微服务开发平台开发的前端项目。它利用了现代 Web 技术，包括 Vue.js 3、Element Plus 和 Vite，提供了一个健壮且高效的开发环境。
+**nqboard-web** 是一个为 NIQBOAR 微服务开发平台开发的前端项目。它利用了现代 Web 技术，包括 Vue.js 3、Element Plus 和 Vite，提供了一个健壮且高效的开发环境。
 
 ## 功能特性
 
