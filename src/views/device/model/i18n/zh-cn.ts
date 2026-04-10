@@ -1,0 +1,24 @@
+export default {
+    model: {
+        name:'模型名称',
+        identifier: "模型标识",
+        dataType: "数据类型",
+        type:"读写类别",
+        remark: "描述信息",
+        baseValue:"基础数值",
+        proportionalCoefficient:"比例系数",
+        min:"最小值",
+        max:"最大值",
+        specs:"正常范围",
+        orderNum:"排序字段",
+        inputNameTip: "请输入模型名称",
+        inputIdentifierTip: "请输入模型标识",
+        inputDataTypeTip: "请选择数据类型",
+        inputRemarkTip: "请输入描述信息",
+        inputBaseValueTip: "请输入基础数值",
+        inputProportionalCoefficientTip: "请输入比例系数",
+        inputMinTip: "请输入最小值",
+        inputMaxTip: "请输入最大值",
+        importMessage: "导入成功"
+    }
+}
