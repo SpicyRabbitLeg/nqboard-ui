@@ -61,6 +61,8 @@
 				<el-table-column prop="area" :label="t('stockBasic.area')" show-overflow-tooltip />
 				<el-table-column prop="market" :label="t('stockBasic.market')" show-overflow-tooltip width="90" />
 				<el-table-column prop="listDate" :label="t('stockBasic.listDate')" show-overflow-tooltip width="110" />
+				<el-table-column prop="actName" :label="t('stockBasic.actName')" show-overflow-tooltip width="160" />
+				<el-table-column prop="actEntType" :label="t('stockBasic.actEntType')" show-overflow-tooltip width="140" />
 				<el-table-column prop="remark" :label="t('stockBasic.remark')" show-overflow-tooltip />
 				<el-table-column :label="t('common.action')" width="150">
 					<template #default="scope">

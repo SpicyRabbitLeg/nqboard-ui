@@ -37,6 +37,14 @@
 				<el-input :placeholder="$t('stockBasic.inputListDateTip')" v-model="form.listDate" />
 			</el-form-item>
 
+			<el-form-item :label="$t('stockBasic.actName')" prop="actName">
+				<el-input :placeholder="$t('stockBasic.inputActNameTip')" v-model="form.actName" />
+			</el-form-item>
+
+			<el-form-item :label="$t('stockBasic.actEntType')" prop="actEntType">
+				<el-input :placeholder="$t('stockBasic.inputActEntTypeTip')" v-model="form.actEntType" />
+			</el-form-item>
+
 			<el-form-item :label="$t('stockBasic.orderNum')" prop="orderNum">
 				<el-input-number :min="0" v-model="form.orderNum" controls-position="right" />
 			</el-form-item>
@@ -88,6 +96,8 @@ const form = reactive({
 	cnspell: '',
 	market: '',
 	listDate: '',
+	actName: '',
+	actEntType: '',
 	orderNum: 0,
 	remark: '',
 });
