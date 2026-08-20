@@ -1,0 +1,22 @@
+export default {
+	stockDaily: {
+		selectStockTip: 'Search stock code/name',
+		prevBtn: 'Prev',
+		nextBtn: 'Next',
+		pageText: '{start}-{end} / {total} bars',
+		emptyTip: 'Please select a stock first',
+		noDataTip: 'No daily data yet, please sync first',
+		open: 'Open',
+		high: 'High',
+		low: 'Low',
+		close: 'Close',
+		preClose: 'Pre Close',
+		pctChg: 'Chg%',
+		vol: 'Volume',
+		amount: 'Amount',
+		optionLoading: 'Loading...',
+		optionLoadMore: 'Scroll for more',
+		optionNoMore: 'No more',
+		optionEmpty: 'No matching stock',
+	},
+};

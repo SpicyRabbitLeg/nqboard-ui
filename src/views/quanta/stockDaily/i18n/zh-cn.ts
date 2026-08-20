@@ -1,0 +1,22 @@
+export default {
+	stockDaily: {
+		selectStockTip: '搜索股票代码/名称',
+		prevBtn: '上一页',
+		nextBtn: '下一页',
+		pageText: '{start}-{end} / 共 {total} 根',
+		emptyTip: '请先选择股票',
+		noDataTip: '该股票暂无日线数据，请先同步',
+		open: '开盘',
+		high: '最高',
+		low: '最低',
+		close: '收盘',
+		preClose: '昨收',
+		pctChg: '涨跌幅',
+		vol: '成交量',
+		amount: '成交额',
+		optionLoading: '加载中...',
+		optionLoadMore: '上拉加载更多',
+		optionNoMore: '没有更多了',
+		optionEmpty: '无匹配股票',
+	},
+};

@@ -99,3 +99,18 @@ export function validateExist(rule: any, value: any, callback: any, isEdit: bool
 		}
 	});
 }
+
+/**
+ * 股票下拉选项分页查询：keyword 按代码/名称模糊匹配（可空），current/size 分页。
+ * 前端 remote 搜索 + 滚动到底自动加载下一页。
+ *
+ * @param query 查询参数（keyword/current/size）
+ * @returns Promise
+ */
+export function fetchOptions(query?: Object) {
+	return request({
+		url: '/quanta/stockBasic/options',
+		method: 'get',
+		params: query,
+	});
+}
