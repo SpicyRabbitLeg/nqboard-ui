@@ -18,11 +18,11 @@
 				>
 					<el-option v-for="s in stockOptions" :key="s.tsCode" :label="`${s.tsCode} ${s.name}`" :value="s.tsCode" />
 					<template #empty>
-						<el-empty :description="$t('stockDaily.optionEmpty')" :image-size="60" />
+						<!-- 加载中不显示空态，避免下拉框闪烁消失 -->
+						<el-empty v-if="!loadingOptions" :description="$t('stockDaily.optionEmpty')" :image-size="60" />
 					</template>
-					<el-option v-if="loadingOptions" :label="$t('stockDaily.optionLoading')" value="__loading__" disabled />
-					<el-option v-else-if="!optionFinished && stockOptions.length" :label="$t('stockDaily.optionLoadMore')" value="__loadmore__" disabled />
-					<el-option v-else-if="optionFinished && stockOptions.length" :label="$t('stockDaily.optionNoMore')" value="__nomore__" disabled />
+					<!-- 单一底部提示选项，文案按状态切换，避免多个选项切换导致列表高度跳动 -->
+					<el-option v-if="stockOptions.length || loadingOptions" :label="optionsFooterText" value="__footer__" disabled />
 				</el-select>
 
 				<el-button-group v-if="allData.length" class="ml10">
@@ -88,6 +88,17 @@ let optionReqSeq = 0;
 let optionsWrapEl: HTMLElement | null = null;
 // 是否已自动选中默认股票（仅进入页面时生效一次）
 let autoSelected = false;
+// 关键字搜索防抖定时器
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+// 关键字首屏结果缓存：重复输入同一关键字时秒开，无刷新感
+const optionCache = new Map<string, { records: StockOption[]; total: number }>();
+
+// 底部提示文案（单一选项，状态切换不引起列表跳动）
+const optionsFooterText = computed(() => {
+	if (loadingOptions.value) return t('stockDaily.optionLoading');
+	if (!optionFinished.value) return t('stockDaily.optionLoadMore');
+	return t('stockDaily.optionNoMore');
+});
 
 // 全量日线（正序），一次拉取后本地切片翻页
 const allData = ref<KlineItem[]>([]);
@@ -233,9 +244,23 @@ const renderChart = () => {
 // 下拉选项：分页拉取，reset=true 重置为第一页，否则追加下一页
 const loadOptions = (reset = false) => {
 	if (!reset && (loadingOptions.value || optionFinished.value)) return;
+	const kw = optionKeyword.value;
+	// 关键字重置搜索：命中缓存直接秒开，不发请求，无刷新感
+	if (reset && optionCache.has(kw)) {
+		optionReqSeq++; // 使在途请求过期，防止旧响应覆盖缓存结果
+		const cached = optionCache.get(kw)!;
+		stockOptions.value = cached.records;
+		optionTotal.value = cached.total;
+		optionFinished.value = cached.records.length >= cached.total;
+		optionPage.value = 2;
+		loadingOptions.value = false;
+		return;
+	}
 	const seq = ++optionReqSeq;
 	loadingOptions.value = true;
-	fetchOptions({ keyword: optionKeyword.value, current: reset ? 1 : optionPage.value, size: OPTION_PAGE_SIZE })
+	// 追加前记录滚动位置，列表更新后恢复，避免下拉框跳动
+	const prevScrollTop = optionsWrapEl?.scrollTop ?? 0;
+	fetchOptions({ keyword: kw, current: reset ? 1 : optionPage.value, size: OPTION_PAGE_SIZE })
 		.then((res: any) => {
 			// 丢弃过期响应（期间关键字已变化）
 			if (seq !== optionReqSeq) return;
@@ -245,8 +270,18 @@ const loadOptions = (reset = false) => {
 			optionTotal.value = pageData.total || 0;
 			optionFinished.value = stockOptions.value.length >= optionTotal.value;
 			optionPage.value = (reset ? 1 : optionPage.value) + 1;
+			// 关键字首屏结果入缓存
+			if (reset) {
+				optionCache.set(kw, { records: list, total: optionTotal.value });
+			}
+			// 追加后恢复滚动位置
+			if (!reset && optionsWrapEl) {
+				nextTick(() => {
+					if (optionsWrapEl) optionsWrapEl.scrollTop = prevScrollTop;
+				});
+			}
 			// 进入页面首次加载下拉数据后，自动选中第一只股票（ts_code 升序首条）
-			if (!autoSelected && !tsCode.value && !optionKeyword.value && stockOptions.value.length) {
+			if (!autoSelected && !tsCode.value && !kw && stockOptions.value.length) {
 				autoSelected = true;
 				tsCode.value = stockOptions.value[0].tsCode;
 				onStockChange(tsCode.value);
@@ -260,10 +295,12 @@ const loadOptions = (reset = false) => {
 		});
 };
 
-// 下拉输入关键字：重置到第一页重新搜索
+// 下拉输入关键字：立即进入加载态，防抖 300ms 后重置到第一页重新搜索
 const searchStocks = (keyword: string) => {
 	optionKeyword.value = keyword || '';
-	loadOptions(true);
+	loadingOptions.value = true;
+	clearTimeout(searchTimer);
+	searchTimer = setTimeout(() => loadOptions(true), 300);
 };
 
 // 下拉展开时挂载滚动监听，收起时卸载；滚动到底部自动加载下一页
@@ -325,6 +362,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
 	window.removeEventListener('resize', onResize);
 	optionsWrapEl?.removeEventListener('scroll', onOptionsScroll);
+	clearTimeout(searchTimer);
 	chart?.dispose();
 	chart = null;
 });
