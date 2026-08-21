@@ -1,0 +1,23 @@
+export default {
+	quantPipeline: {
+		runBtn: '触发流水线',
+		rerunStep: '重跑',
+		runSubmitted: '流水线已提交（运行id: {runId}），执行进度见下方列表',
+		stepSubmitted: '步骤已提交重跑',
+		runFail: '流水线触发失败（可能正在运行中）',
+		loadFail: '加载失败',
+		readinessOk: '数据就绪',
+		readinessFail: '数据未就绪',
+		coverage: '日线覆盖率',
+		autoRefreshTip: '存在执行中步骤时每 10 秒自动刷新',
+		step: '步骤编码',
+		stepName: '步骤名称',
+		status: '状态',
+		notRun: '未执行',
+		affected: '影响行数',
+		message: '说明',
+		elapsed: '耗时',
+		endTime: '结束时间',
+		exception: '异常信息',
+	},
+};

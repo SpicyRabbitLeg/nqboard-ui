@@ -1,0 +1,23 @@
+export default {
+	quantPipeline: {
+		runBtn: 'Run Pipeline',
+		rerunStep: 'Rerun',
+		runSubmitted: 'Pipeline submitted (runId: {runId})',
+		stepSubmitted: 'Step rerun submitted',
+		runFail: 'Failed to trigger pipeline (may be running)',
+		loadFail: 'Load failed',
+		readinessOk: 'Data ready',
+		readinessFail: 'Data not ready',
+		coverage: 'Daily coverage',
+		autoRefreshTip: 'Auto refresh every 10s while any step is running',
+		step: 'Step',
+		stepName: 'Step Name',
+		status: 'Status',
+		notRun: 'Not Run',
+		affected: 'Affected',
+		message: 'Message',
+		elapsed: 'Elapsed',
+		endTime: 'End Time',
+		exception: 'Exception',
+	},
+};
