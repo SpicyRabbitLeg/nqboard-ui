@@ -91,7 +91,9 @@ const loadLogs = async () => {
 	loading.value = true;
 	try {
 		const res: any = await fetchLogs();
-		logs.value = res.data || [];
+		// 只展示后端当前注册的步骤（历史架构遗留的旧步骤日志不显示）
+		const stepCodes = new Set(steps.value.map((s: any) => s.step));
+		logs.value = (res.data || []).filter((l: any) => stepCodes.size === 0 || stepCodes.has(l.step));
 		mergeLogs();
 	} catch (err: any) {
 		useMessage().error(err.msg || t('quantPipeline.loadFail'));
