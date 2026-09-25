@@ -3,11 +3,20 @@
 		<div class="layout-padding-auto layout-padding-view">
 			<el-row v-show="showSearch">
 				<el-form ref="queryRef" :inline="true" :model="state.queryForm" @keyup.enter="getDataList">
+					<el-form-item :label="$t('expert.expertName')" prop="expertName">
+						<el-input v-model="state.queryForm.expertName" :placeholder="$t('expert.inputExpertNameTip')" clearable />
+					</el-form-item>
 					<el-form-item :label="$t('expert.subjectCategory')" prop="subjectCategory">
-						<el-input v-model="state.queryForm.subjectCategory" :placeholder="$t('expert.inputSubjectCategoryTip')" clearable />
+						<el-select v-model="state.queryForm.subjectCategory" class="w100" clearable filterable
+							:placeholder="$t('expert.inputSubjectCategoryTip')" @change="handleCategoryChange">
+							<el-option v-for="item in categoryOptions" :key="item" :label="item" :value="item" />
+						</el-select>
 					</el-form-item>
 					<el-form-item :label="$t('expert.firstDiscipline')" prop="firstDiscipline">
-						<el-input v-model="state.queryForm.firstDiscipline" :placeholder="$t('expert.inputFirstDisciplineTip')" clearable />
+						<el-select v-model="state.queryForm.firstDiscipline" class="w100" clearable filterable
+							:placeholder="$t('expert.inputFirstDisciplineTip')">
+							<el-option v-for="item in disciplineOptions" :key="item" :label="item" :value="item" />
+						</el-select>
 					</el-form-item>
 					<el-form-item :label="$t('expert.researchDirection')" prop="researchDirection">
 						<el-input v-model="state.queryForm.researchDirection" :placeholder="$t('expert.inputResearchDirectionTip')" clearable />
@@ -27,6 +36,10 @@
 
 					<el-button plain :disabled="multiple" icon="Delete" type="primary" v-auth="'export_expert_del'" @click="handleDelete(selectObjs)">
 						{{ $t('common.delBtn') }}
+					</el-button>
+
+					<el-button plain @click="excelUploadRef.show()" class="ml10" icon="upload-filled" type="primary" v-auth="'export_expert_add'">
+						{{ $t('expert.importBtn') }}
 					</el-button>
 
 					<right-toolbar
@@ -51,6 +64,7 @@
 			>
 				<el-table-column type="selection" width="40" align="center" />
 				<el-table-column type="index" label="#" width="40" />
+				<el-table-column prop="expertName" :label="t('expert.expertName')" show-overflow-tooltip />
 				<el-table-column prop="subjectCategory" :label="t('expert.subjectCategory')" show-overflow-tooltip />
 				<el-table-column prop="firstDiscipline" :label="t('expert.firstDiscipline')" show-overflow-tooltip />
 				<el-table-column prop="secondDiscipline" :label="t('expert.secondDiscipline')" show-overflow-tooltip />
@@ -73,12 +87,21 @@
 
 		<!-- 编辑、新增  -->
 		<FormDialog ref="formDialogRef" @refresh="getDataList(false)" />
+
+		<!-- 导入excel -->
+		<upload-excel
+			ref="excelUploadRef"
+			:title="$t('expert.importTitle')"
+			url="/export/expert/import"
+			temp-url="/export/expert_template.xlsx"
+			@refreshDataList="getDataList"
+		/>
 	</div>
 </template>
 
 <script setup lang="ts" name="expert">
 import { BasicTableProps, useTable } from '/@/hooks/table';
-import { fetchList, delObjs } from '/@/api/export/expert';
+import { fetchList, delObjs, fetchCategoryOptions, fetchDisciplineOptions } from '/@/api/export/expert';
 import { useMessage, useMessageBox } from '/@/hooks/message';
 import { useI18n } from 'vue-i18n';
 
@@ -90,6 +113,7 @@ const FormDialog = defineAsyncComponent(() => import('./form.vue'));
 
 // 定义变量内容
 const formDialogRef = ref();
+const excelUploadRef = ref();
 
 // 搜索变量
 const queryRef = ref();
@@ -101,11 +125,29 @@ const multiple = ref(true);
 
 const state: BasicTableProps = reactive<BasicTableProps>({
 	queryForm: {
+		expertName: '',
 		subjectCategory: '',
 		firstDiscipline: '',
 		researchDirection: '',
 	},
 	pageList: fetchList,
+});
+
+// 下拉选项
+const categoryOptions = ref<string[]>([]);
+const disciplineOptions = ref<string[]>([]);
+
+// 学科门类切换：级联重载一级学科选项，并清空已选学科
+const handleCategoryChange = async (category: string) => {
+	state.queryForm.firstDiscipline = '';
+	const res: any = await fetchDisciplineOptions(category || undefined);
+	disciplineOptions.value = (res.data as string[]) ?? [];
+};
+
+onMounted(async () => {
+	const res: any = await fetchCategoryOptions();
+	categoryOptions.value = (res.data as string[]) ?? [];
+	handleCategoryChange('');
 });
 
 //  table hook

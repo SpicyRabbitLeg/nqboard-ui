@@ -15,6 +15,30 @@ export function fetchList(query?: Object) {
 }
 
 /**
+ * 获取学科门类下拉选项（库内去重）。
+ * @returns {Promise} 请求的 Promise 对象。
+ */
+export function fetchCategoryOptions() {
+	return request({
+		url: '/export/expert/options/category',
+		method: 'get',
+	});
+}
+
+/**
+ * 获取一级学科下拉选项（可按门类级联过滤）。
+ * @param {string} [category] - 学科门类（可选）。
+ * @returns {Promise} 请求的 Promise 对象。
+ */
+export function fetchDisciplineOptions(category?: string) {
+	return request({
+		url: '/export/expert/options/discipline',
+		method: 'get',
+		params: { category },
+	});
+}
+
+/**
  * 添加一个新专家。
  * @param {Object} [obj] - 要添加的对象。
  * @returns {Promise} 请求的 Promise 对象 （true/false）。
