@@ -26,8 +26,17 @@
 				</div>
 			</el-card>
 
+			<!-- 任务进度（异步抽取：解析/打分/复核/落库） -->
+			<el-card v-if="running" shadow="never" class="mb8">
+				<div style="display: flex; align-items: center; gap: 12px">
+					<span>{{ stageText }}</span>
+					<el-progress v-if="progress.total > 0" :percentage="progressPercent" striped striped-flow style="flex: 1" />
+				</div>
+				<div v-if="progress.error" style="color: #f56c6c; font-size: 12px">{{ progress.error }}</div>
+			</el-card>
+
 			<!-- 三档统计 -->
-			<el-row v-if="record.id" :gutter="8" class="mb8">
+			<el-row v-if="record.id && !running" :gutter="8" class="mb8">
 				<el-col :span="8">
 					<el-card shadow="never">
 						<el-statistic :title="$t('expertExtract.statSelected')" :value="record.selectedCount ?? 0" />
@@ -45,9 +54,12 @@
 					</el-card>
 				</el-col>
 			</el-row>
+			<div v-if="record.id && !running" style="color: #999; font-size: 12px" class="mb8">
+				{{ $t('expertExtract.tierTip') }}
+			</div>
 
 			<!-- 三档结果 -->
-			<el-tabs v-if="record.id" v-model="activeTab" @tab-change="handleTabChange">
+			<el-tabs v-if="record.id && !running" v-model="activeTab" @tab-change="handleTabChange">
 				<el-tab-pane :label="$t('expertExtract.selectedTab')" name="selected">
 					<el-table :data="selectedState.records" v-loading="selectedState.loading" border max-height="calc(100vh - 420px)"
 						:cell-style="tableStyle.cellStyle" :header-cell-style="tableStyle.headerCellStyle">
@@ -111,6 +123,11 @@
 					<el-table-column prop="candidateCount" :label="$t('expertExtract.statCandidate')" width="80" align="center" />
 					<el-table-column prop="unmatchedCount" :label="$t('expertExtract.statUnmatched')" width="90" align="center" />
 					<el-table-column prop="createTime" :label="$t('expertExtract.recordTime')" width="170" />
+					<el-table-column :label="$t('expertExtract.recordStatus')" width="80" align="center">
+						<template #default="scope">
+							<el-tag :type="statusTagType(scope.row.status)" size="small">{{ statusText(scope.row.status) }}</el-tag>
+						</template>
+					</el-table-column>
 					<el-table-column :label="$t('common.action')" width="80">
 						<template #default="scope">
 							<el-button text type="primary" @click.stop="viewHistoryRow(scope.row)">{{ $t('expertExtract.view') }}</el-button>
@@ -131,6 +148,8 @@ import { useTable } from '/@/hooks/table';
 import { useI18n } from 'vue-i18n';
 import {
 	runExtraction,
+	fetchRunProgress,
+	fetchExtractRecord,
 	fetchExtractRecords,
 	fetchExtractRecordDetail,
 	fetchUnmatchedExperts,
@@ -148,6 +167,28 @@ const running = ref(false);
 const record = ref<any>({});
 const parsedDomainNames = ref<string[]>([]);
 const activeTab = ref('selected');
+
+// 异步任务进度（后端单飞，同一时刻至多一个抽取任务）
+const progress = reactive({ stage: '', done: 0, total: 0, error: '' as any, recordId: null as any });
+let pollTimer: any = null;
+
+const stageText = computed(() => {
+	const map: Record<string, string> = {
+		parse: t('expertExtract.stageParse'),
+		score: t('expertExtract.stageScore'),
+		review: t('expertExtract.stageReview'),
+		save: t('expertExtract.stageSave'),
+	};
+	const base = map[progress.stage] ?? t('expertExtract.stageParse');
+	return progress.stage === 'review' && progress.total > 0 ? `${base} ${progress.done}/${progress.total}` : base;
+});
+
+const progressPercent = computed(() => (progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0));
+
+const statusText = (s: string) =>
+	s === '2' ? t('expertExtract.statusRunning') : s === '1' ? t('expertExtract.statusFailed') : t('expertExtract.statusSuccess');
+
+const statusTagType = (s: string) => (s === '2' ? 'warning' : s === '1' ? 'danger' : 'success');
 
 // 三档各自的分页状态
 const selectedState = reactive({ records: [] as any[], total: 0, current: 1, size: 10, loading: false });
@@ -170,9 +211,26 @@ onMounted(() => {
 			domainNameMap.value = map;
 		})
 		.catch(() => {});
+	// 页面加载时恢复进行中任务的轮询（重启页面不丢任务）
+	fetchRunProgress()
+		.then((res: any) => {
+			if (res.data?.running) {
+				running.value = true;
+				progress.stage = res.data.stage ?? '';
+				progress.done = res.data.done ?? 0;
+				progress.total = res.data.total ?? 0;
+				progress.error = '';
+				progress.recordId = res.data.recordId ?? null;
+				record.value = { id: res.data.recordId };
+				startPolling(String(res.data.recordId ?? ''));
+			}
+		})
+		.catch(() => {});
 });
 
-// 执行抽取
+onUnmounted(() => stopPolling());
+
+// 执行抽取：后端异步启动（立即返回运行中记录），前端轮询进度至完成后刷新记录
 const handleRun = async () => {
 	if (!queryText.value.trim()) {
 		useMessage().warning(t('expertExtract.queryRequired'));
@@ -181,12 +239,56 @@ const handleRun = async () => {
 	running.value = true;
 	try {
 		const res: any = await runExtraction({ query: queryText.value.trim() });
-		applyRecord(res.data);
-		useMessage().success(t('expertExtract.runSuccess'));
+		record.value = res.data ?? {};
+		startPolling(String(res.data?.id ?? ''));
+		useMessage().success(t('expertExtract.runStarted'));
 	} catch (err: any) {
-		useMessage().error(err.msg);
-	} finally {
 		running.value = false;
+		useMessage().error(err.msg);
+	}
+};
+
+const startPolling = (recordId: string) => {
+	progress.recordId = recordId;
+	progress.error = '';
+	stopPolling();
+	pollTimer = window.setInterval(pollProgress, 3000);
+	pollProgress();
+};
+
+const stopPolling = () => {
+	if (pollTimer) {
+		window.clearInterval(pollTimer);
+		pollTimer = null;
+	}
+};
+
+const pollProgress = async () => {
+	try {
+		const res: any = await fetchRunProgress();
+		const p = res.data ?? {};
+		progress.stage = p.stage ?? '';
+		progress.done = p.done ?? 0;
+		progress.total = p.total ?? 0;
+		progress.error = p.error ?? '';
+		if (p.error) {
+			stopPolling();
+			running.value = false;
+			useMessage().error(t('expertExtract.runFailed'));
+			return;
+		}
+		if (!p.running) {
+			stopPolling();
+			const rid = p.recordId ?? record.value.id;
+			if (rid) {
+				const detail: any = await fetchExtractRecord(rid);
+				applyRecord(detail.data);
+			}
+			running.value = false;
+			useMessage().success(t('expertExtract.runSuccess'));
+		}
+	} catch {
+		// 网络瞬断跳过本轮，等待下次轮询
 	}
 };
 

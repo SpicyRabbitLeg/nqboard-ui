@@ -155,15 +155,39 @@ export function fetchKnowledgeIndexingStatus() {
 }
 
 /**
- * 执行专家抽取（自然语言）。
+ * 执行专家抽取（异步启动）。
+ * 后端立即返回运行中记录（status=2），进度经 fetchRunProgress 轮询，完成后经 fetchExtractRecord 刷新。
  * @param {Object} [obj] - {query: 自然语言抽取条件}。
- * @returns {Promise} 请求的 Promise 对象（抽取记录，含三档数量统计）。
+ * @returns {Promise} 请求的 Promise 对象（运行中的抽取记录）。
  */
 export function runExtraction(obj?: Object) {
 	return request({
 		url: '/export/extract/run',
 		method: 'post',
 		data: obj,
+	});
+}
+
+/**
+ * 获取当前抽取任务进度（running/stage/done/total/recordId/error）。
+ * @returns {Promise} 请求的 Promise 对象。
+ */
+export function fetchRunProgress() {
+	return request({
+		url: '/export/extract/run/progress',
+		method: 'get',
+	});
+}
+
+/**
+ * 按 id 获取抽取记录（任务完成后刷新状态与三档数量）。
+ * @param {string|number} recordId - 抽取记录 id。
+ * @returns {Promise} 请求的 Promise 对象。
+ */
+export function fetchExtractRecord(recordId: string | number) {
+	return request({
+		url: `/export/extract/record/${recordId}`,
+		method: 'get',
 	});
 }
 
