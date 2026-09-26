@@ -92,8 +92,6 @@ export const useThemeConfig = defineStore('themeConfig', {
 			isSortableTagsView: true,
 			// 是否开启 TagsView 共用
 			isShareTagsView: false,
-			// 是否开启 Footer 底部版权信息
-			isFooter: true,
 			// 是否开启灰色模式
 			isGrayscale: false,
 			// 是否开启色弱模式
@@ -142,8 +140,6 @@ export const useThemeConfig = defineStore('themeConfig', {
 			globalI18n: 'zh-cn',
 			// 默认全局组件大小，可选值"<large|'default'|small>"，默认 'default'
 			globalComponentSize: 'default',
-			// footer 页面作者
-			footerAuthor: '©2025 PIGCLOUD',
 		},
 	}),
 	actions: {

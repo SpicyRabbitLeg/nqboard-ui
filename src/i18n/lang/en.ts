@@ -158,7 +158,6 @@ export default {
 		fourIsCacheTagsView: 'Enable Tagsview Cache',
 		fourIsSortableTagsView: 'Enable Tagsview Drag',
 		fourIsShareTagsView: 'Enable Tagsview Sharing',
-		fourIsFooter: 'Open Footer',
 		fourIsGrayscale: 'Grey Model',
 		fourIsInvert: 'Color Weak Mode',
 		fourIsDark: 'Dark Mode',

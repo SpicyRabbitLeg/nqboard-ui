@@ -63,12 +63,13 @@
 				@sort-change="sortChangeHandle"
 			>
 				<el-table-column type="selection" width="40" align="center" />
-				<el-table-column type="index" label="#" width="40" />
+				<el-table-column type="index" label="#" width="60" />
 				<el-table-column prop="expertName" :label="t('expert.expertName')" show-overflow-tooltip />
 				<el-table-column prop="subjectCategory" :label="t('expert.subjectCategory')" show-overflow-tooltip />
 				<el-table-column prop="firstDiscipline" :label="t('expert.firstDiscipline')" show-overflow-tooltip />
 				<el-table-column prop="secondDiscipline" :label="t('expert.secondDiscipline')" show-overflow-tooltip />
 				<el-table-column prop="researchDirection" :label="t('expert.researchDirection')" show-overflow-tooltip />
+				<el-table-column prop="domainName" :label="t('expert.domainName')" show-overflow-tooltip />
 				<el-table-column :label="t('common.action')" width="150">
 					<template #default="scope">
 						<el-button icon="edit-pen" text type="primary" v-auth="'export_expert_edit'" @click="formDialogRef.openDialog(scope.row.id)"
@@ -130,6 +131,9 @@ const state: BasicTableProps = reactive<BasicTableProps>({
 		firstDiscipline: '',
 		researchDirection: '',
 	},
+	 pagination: {
+        size: 200,
+    },
 	pageList: fetchList,
 });
 

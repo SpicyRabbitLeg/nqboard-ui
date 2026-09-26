@@ -4,6 +4,7 @@ export default {
 		fileFormat: 'only xls, xlsx format files are allowed',
 		operationNotice: 'Drag the file here and',
 		clickUpload: 'click upload',
+		importing: 'Importing data, please wait. Large files may take a while...',
 		lineNumbers: 'line numbers',
 		misDescription: 'misDescription',
 		validationFailureData: 'validation failure data',

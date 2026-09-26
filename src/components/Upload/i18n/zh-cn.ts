@@ -4,6 +4,7 @@ export default {
 		fileFormat: '仅允许导入xls、xlsx格式文件。',
 		operationNotice: '将文件拖到此处，或',
 		clickUpload: '点击上传',
+		importing: '数据导入中，请耐心等待，大文件可能耗时较长...',
 		lineNumbers: '行号',
 		misDescription: '错误描述',
 		validationFailureData: '校验失败数据',

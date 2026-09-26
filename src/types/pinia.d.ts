@@ -71,7 +71,6 @@ declare interface ThemeConfigState {
 		isCacheTagsView: boolean;
 		isSortableTagsView: boolean;
 		isShareTagsView: boolean;
-		isFooter: boolean;
 		isGrayscale: boolean;
 		isInvert: boolean;
 		isIsDark: boolean;
@@ -88,6 +87,5 @@ declare interface ThemeConfigState {
 		globalViceTitleMsg: string;
 		globalI18n: string;
 		globalComponentSize: string;
-		footerAuthor: string;
 	};
 }

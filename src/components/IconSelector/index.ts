@@ -15,33 +15,35 @@ function findSvgFile(dir: string): string[] {
 		withFileTypes: true,
 	});
 	for (const dirent of dirents) {
-		iconNames.push(`${idPerfix}-${dirent.name.replace('.svg', '')}`);
 		if (dirent.isDirectory()) {
 			svgRes.push(...findSvgFile(dir + dirent.name + '/'));
-		} else {
-			const svg = readFileSync(dir + dirent.name)
-				.toString()
-				.replace(clearReturn, '')
-				.replace(clearFill, 'fill=""')
-				.replace(svgTitle, ($1, $2) => {
-					let width = 0;
-					let height = 0;
-					let content = $2.replace(clearHeightWidth, (s1: string, s2: string, s3: number) => {
-						if (s2 === 'width') {
-							width = s3;
-						} else if (s2 === 'height') {
-							height = s3;
-						}
-						return '';
-					});
-					if (!hasViewBox.test($2)) {
-						content += `viewBox="0 0 ${width} ${height}"`;
-					}
-					return `<symbol id="${idPerfix}-${dirent.name.replace('.svg', '')}" ${content}>`;
-				})
-				.replace('</svg>', '</symbol>');
-			svgRes.push(svg);
+			continue;
 		}
+		// 目录中混入的非 svg 文件（如图片）若被读入，二进制内容会注入页面形成乱码
+		if (!dirent.name.endsWith('.svg')) continue;
+		iconNames.push(`${idPerfix}-${dirent.name.replace('.svg', '')}`);
+		const svg = readFileSync(dir + dirent.name)
+			.toString()
+			.replace(clearReturn, '')
+			.replace(clearFill, 'fill=""')
+			.replace(svgTitle, ($1, $2) => {
+				let width = 0;
+				let height = 0;
+				let content = $2.replace(clearHeightWidth, (s1: string, s2: string, s3: number) => {
+					if (s2 === 'width') {
+						width = s3;
+					} else if (s2 === 'height') {
+						height = s3;
+					}
+					return '';
+				});
+				if (!hasViewBox.test($2)) {
+					content += `viewBox="0 0 ${width} ${height}"`;
+				}
+				return `<symbol id="${idPerfix}-${dirent.name.replace('.svg', '')}" ${content}>`;
+			})
+			.replace('</svg>', '</symbol>');
+		svgRes.push(svg);
 	}
 	return svgRes;
 }

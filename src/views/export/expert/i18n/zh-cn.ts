@@ -6,6 +6,7 @@ export default {
 		firstDiscipline: '一级学科',
 		secondDiscipline: '二级学科',
 		researchDirection: '研究方向',
+		domainName:'领域名称',
 		inputSubjectCategoryTip: '请输入学科门类',
 		inputFirstDisciplineTip: '请输入一级学科',
 		inputSecondDisciplineTip: '请输入二级学科',

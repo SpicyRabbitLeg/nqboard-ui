@@ -253,15 +253,8 @@
 							@change="onShareTagsViewChange"></el-switch>
 					</div>
 				</div>
-				<div class="layout-breadcrumb-seting-bar-flex mt15">
-					<div class="layout-breadcrumb-seting-bar-flex-label">{{ $t('layout.fourIsFooter') }}</div>
-					<div class="layout-breadcrumb-seting-bar-flex-value">
-						<el-switch v-model="getThemeConfig.isFooter" size="small"
-							@change="setLocalThemeConfig"></el-switch>
-					</div>
-				</div>
-				<div class="layout-breadcrumb-seting-bar-flex mt15">
-					<div class="layout-breadcrumb-seting-bar-flex-label">{{ $t('layout.fourIsGrayscale') }}</div>
+					<div class="layout-breadcrumb-seting-bar-flex mt15">
+						<div class="layout-breadcrumb-seting-bar-flex-label">{{ $t('layout.fourIsGrayscale') }}</div>
 					<div class="layout-breadcrumb-seting-bar-flex-value">
 						<el-switch v-model="getThemeConfig.isGrayscale" size="small"
 							@change="onAddFilterChange('grayscale')"></el-switch>

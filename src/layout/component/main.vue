@@ -7,7 +7,6 @@
 			view-class="layout-main-scroll"
 		>
 			<LayoutParentView />
-			<LayoutFooter v-if="isFooter" />
 		</el-scrollbar>
 		<el-backtop :target="setBacktopClass" />
 		<check-token />
@@ -21,21 +20,15 @@ import { NextLoading } from '/@/utils/loading';
 
 // 引入组件
 const LayoutParentView = defineAsyncComponent(() => import('/@/layout/routerView/parent.vue'));
-const LayoutFooter = defineAsyncComponent(() => import('/@/layout/footer/index.vue'));
 const CheckToken = defineAsyncComponent(() => import('/@/components/CheckToken/index.vue'));
 
 // 定义变量内容
 const layoutMainScrollbarRef = ref();
-const route = useRoute();
 const storesTagsViewRoutes = useTagsViewRoutes();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
 
-// 设置 footer 显示/隐藏
-const isFooter = computed(() => {
-	return themeConfig.value.isFooter && !route.meta.isIframe;
-});
 // 设置 header 固定
 const isFixedHeader = computed(() => {
 	return themeConfig.value.isFixedHeader;

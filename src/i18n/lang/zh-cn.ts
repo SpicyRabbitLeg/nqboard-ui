@@ -151,7 +151,6 @@ export default {
 		fourIsCacheTagsView: '开启 TagsView 缓存',
 		fourIsSortableTagsView: '开启 TagsView 拖拽',
 		fourIsShareTagsView: '开启 TagsView 共用',
-		fourIsFooter: '开启 Footer',
 		fourIsGrayscale: '灰色模式',
 		fourIsInvert: '色弱模式',
 		fourIsDark: '深色模式',
